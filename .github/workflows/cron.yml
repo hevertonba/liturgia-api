@@ -1,0 +1,24 @@
+name: Atualizar Liturgia Diária
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Instalar Puppeteer
+        run: npm install puppeteer
+      - name: Executar Scraper
+        run: node scraper.js
+      - name: Salvar no GitHub
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git add liturgia_hoje.json
+          git commit -m "Update $(date +'%d/%m/%Y')" || exit 0
+          git push
