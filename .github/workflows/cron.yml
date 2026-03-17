@@ -1,4 +1,51 @@
-- name: Executar Scrapers
+name: 🔄 Sincronização Diária - CNBB e Vaticano
+
+on:
+  schedule:
+    # Roda todos os dias às 04:00 UTC (01:00 no Horário de Brasília)
+    - cron: '0 4 * * *'
+  workflow_dispatch: # Permite rodar manualmente clicando no botão no GitHub
+
+jobs:
+  atualizar-dados:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Baixar o repositório
+        uses: actions/checkout@v3
+
+      - name: ⚙️ Configurar Node.js 20
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: 📦 Instalar Puppeteer
         run: |
-          node scraper.js
-          node vaticano.js
+          npm init -y
+          npm install puppeteer
+
+      - name: 🕷️ Executar Scraper CNBB
+        run: node scraper-cnbb.js
+        continue-on-error: true # Se a CNBB cair, o fluxo continua para o Vaticano
+
+      - name: 🇻🇦 Executar Scraper Vaticano
+        run: node vaticano.js
+        continue-on-error: true
+
+      - name: 🇻🇦 Executar Scraper  
+        run: node scraper.js
+        continue-on-error: true
+
+      - name: 💾 Salvar e enviar para o GitHub
+        run: |
+          git config --global user.name "Bot Liturgia.br"
+          git config --global user.email "bot@liturgia.br"
+          git add liturgia_cnbb.json vaticano_dados.json
+          
+          # Só faz o commit se houver mudanças nos arquivos
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "Atualização diária de dados: $(date +'%d/%m/%Y')"
+            git push
+          else
+            echo "Nenhuma mudança nos dados hoje."
+          fi
