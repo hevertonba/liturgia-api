@@ -1,0 +1,9 @@
+{
+  "name": "liturgia-api",
+  "version": "2.1.0",
+  "description": "API de Liturgia Dinâmica para o liturgia.br",
+  "main": "scraper.js",
+  "dependencies": {
+    "puppeteer": "^21.0.0"
+  }
+}
